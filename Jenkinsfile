@@ -1,25 +1,25 @@
 pipeline {
-  agent { label 'linux' }
+  agent { label 'docker' }
   options {
     buildDiscarder(logRotator(numToKeepStr: '5'))
   }
   environment {
-    DOCKERHUB_CREDENTIALS = credentials('darinpope-dockerhub')
+    DOCKERHUB_CREDENTIALS = credentials('dockerhubcreds')
   }
   stages {
     stage('Build') {
       steps {
-        sh 'docker build -t darinpope/dp-alpine:latest .'
+        sh 'docker build -t pescek/dp-alpine:latest .'
       }
     }
     stage('Login') {
-      steps {
-        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+      withCredentials([usernamePassword(credentialsId: 'dockerhubcreds', passwordVariable: '', usernameVariable: '')]) {
+          sh 'echo $passwordVariable | docker login -u $usernameVariable --password-stdin'
       }
     }
     stage('Push') {
       steps {
-        sh 'docker push darinpope/dp-alpine:latest'
+        sh 'docker push pescek/dp-alpine:latest'
       }
     }
   }
